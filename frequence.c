@@ -9,12 +9,12 @@ typedef struct {float freq;int fg;int fd;int pere;}Noeud;
 
 //declaration d'un tableau de noeud qu'on appelle arbre
 Noeud arbre[511];
+unsigned int cmpt = 0;
 
 void calculFrequence(char * fichier){
   char buffer[1];
   FILE* fd= fopen(fichier,"r");
   unsigned int i=0;
-  unsigned int cmpt = 0;
   if(fd){
     while(fread(buffer,1,1,fd)){ //je lis dans fd 1 caractere de taile 1octet dans buffer
       printf("%c %i\n",buffer[0],buffer[0]);// j'affiche le caractere lu et son code ASCII
@@ -73,17 +73,20 @@ int main(int argc,char* argv[]){
   float min2=1.0;
   int k=0; int indice1,indice2;
   
-  while(k<256){
-    if( arbre[k].freq<min1 && arbre[k].freq != 0.0 && arbre[k].pere==-1 ){
-      min2=min1;
-      min1=arbre[k].freq;
-      indice1=k;
+  while(cmpt>0){
+    while(k<256){
+      if( arbre[k].freq<min1 && arbre[k].freq != 0.0 && arbre[k].pere==-1 ){
+	min2=min1;
+	min1=arbre[k].freq;
+	indice1=k;
     
-    }else if(arbre[k].freq<min2 && arbre[k].freq!=0.0 && arbre[k].pere==-1){
-      min2=arbre[k].freq;
-      indice2=k;
+      }else if(arbre[k].freq<min2 && arbre[k].freq!=0.0 && arbre[k].pere==-1){
+	min2=arbre[k].freq;
+	indice2=k;
+      }
+      k++;
     }
-    k++;
+    cmpt--;
   }
   printf("(minimum1,minimum2)->(%f,%f)\n",min1,min2);
   modifierPereEtFils(indice1,indice2);
