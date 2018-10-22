@@ -10,11 +10,11 @@ typedef struct {float freq;int fg;int fd;int pere;}Noeud;
 //declaration d'un tableau de noeud qu'on appelle arbre
 Noeud arbre[511];
 unsigned int cmpt = 0;
-
+unsigned int i=0;
 void calculFrequence(char * fichier){
   char buffer[1];
   FILE* fd= fopen(fichier,"r");
-  unsigned int i=0;
+  
   if(fd){
     while(fread(buffer,1,1,fd)){ //je lis dans fd 1 caractere de taile 1octet dans buffer
       printf("%c %i\n",buffer[0],buffer[0]);// j'affiche le caractere lu et son code ASCII
@@ -68,12 +68,11 @@ void modifierPereEtFils(int indice1,int indice2){
 int main(int argc,char* argv[]){
   calculFrequence(argv[1]);
   initArbre();
+  printf("%u\n",i);
   //calcul des minimum
   float min1=1.0;
   float min2=1.0;
   int k=0; int indice1,indice2;
-  
-  while(cmpt>0){
     while(k<256){
       if( arbre[k].freq<min1 && arbre[k].freq != 0.0 && arbre[k].pere==-1 ){
 	min2=min1;
@@ -86,8 +85,7 @@ int main(int argc,char* argv[]){
       }
       k++;
     }
-    cmpt--;
-  }
+   
   printf("(minimum1,minimum2)->(%f,%f)\n",min1,min2);
   modifierPereEtFils(indice1,indice2);
   printArbre();
