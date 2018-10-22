@@ -46,6 +46,25 @@ void initArbre(){
       arbre[j].freq=0.0;
     }
   }
+  //recherche des mins et creation des noeuds
+  
+   //calcul des minimums
+  float min1=1.0;
+  float min2=1.0;
+  int k=0; int indice1,indice2;
+    while(k<256){
+      if( arbre[k].freq<min1 && arbre[k].freq != 0.0 && arbre[k].pere==-1 ){
+	min2=min1;
+	min1=arbre[k].freq;
+	indice1=k;
+    
+      }else if(arbre[k].freq<min2 && arbre[k].freq!=0.0 && arbre[k].pere==-1){
+	min2=arbre[k].freq;
+	indice2=k;
+      }
+      k++;
+    }
+   
 }
 
 //afficher mon tableau arbre
@@ -69,23 +88,6 @@ int main(int argc,char* argv[]){
   calculFrequence(argv[1]);
   initArbre();
   printf("%u\n",i);
-  //calcul des minimum
-  float min1=1.0;
-  float min2=1.0;
-  int k=0; int indice1,indice2;
-    while(k<256){
-      if( arbre[k].freq<min1 && arbre[k].freq != 0.0 && arbre[k].pere==-1 ){
-	min2=min1;
-	min1=arbre[k].freq;
-	indice1=k;
-    
-      }else if(arbre[k].freq<min2 && arbre[k].freq!=0.0 && arbre[k].pere==-1){
-	min2=arbre[k].freq;
-	indice2=k;
-      }
-      k++;
-    }
-   
   printf("(minimum1,minimum2)->(%f,%f)\n",min1,min2);
   modifierPereEtFils(indice1,indice2);
   printArbre();
