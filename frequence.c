@@ -5,7 +5,7 @@
 float frequence[256];
 
 //definition de la structure Noeud
-typedef struct {float freq;int fg;int fd;int pere;}Noeud;
+typedef struct {float freq;int fg; int fd;int pere;}Noeud;
 
 //declaration d'un tableau de noeud qu'on appelle arbre
 Noeud arbre[511];
@@ -16,7 +16,7 @@ void calculFrequence(char * fichier){
   FILE* fd= fopen(fichier,"r");
   
   if(fd){
-    while(fread(buffer,1,1,fd)){ //je lis dans fd 1 caractere de taile 1octet dans buffer
+    while(fread(buffer,1,1,fd)){ //je lis dans fd 1 caractere de taile 1 octet sur buffer
       printf("%c %i\n",buffer[0],buffer[0]);// j'affiche le caractere lu et son code ASCII
       frequence[buffer[0]]++;
       i++;
@@ -33,9 +33,23 @@ void calculFrequence(char * fichier){
   }
 }
 
+//modifier les pere des minimum
+
+void modifierPereFilsFrequence(int indice1,int indice2,int k){
+  arbre[indice1].pere=k;
+  arbre[indice2].pere=k;
+  arbre[k].fd= indice2;
+  arbre[k].fg= indice1;
+  arbre[k].freq= arbre[indice2].freq + arbre[indice1].freq;
+  arbre[indice1].freq=0.0;
+  arbre[indice2].freq=0.0;
+  k++;
+}
+
 //initialisation de mon arbre
-int j=0;
-void initArbre(){
+
+unsigned int initArbre(){
+  int j=0;
   for(j;j<511;j++){
     arbre[j].pere=-1 ;
     arbre[j].fg=-1;
@@ -46,16 +60,22 @@ void initArbre(){
       arbre[j].freq=0.0;
     }
   }
-  //recherche des mins et creation des noeuds
   
+  //recherche des mins et creation des noeuds
    //calcul des minimums
   float min1=1.0;
   float min2=1.0;
-  int k=0; int indice1,indice2;
-    while(k<256){
+  unsigned int k=0;
+  unsigned int indice1,indice2;
+  unsigned int nbNoeuds=256;
+  
+  while(arbre[nbNoeuds-1].freq!=1.0){
+    k=0;
+    while(k<nbNoeuds){
       if( arbre[k].freq<min1 && arbre[k].freq != 0.0 && arbre[k].pere==-1 ){
 	min2=min1;
 	min1=arbre[k].freq;
+	indice2=indice1;
 	indice1=k;
     
       }else if(arbre[k].freq<min2 && arbre[k].freq!=0.0 && arbre[k].pere==-1){
@@ -64,33 +84,26 @@ void initArbre(){
       }
       k++;
     }
-   
+    modifierPereFilsFrequence(indice1,indice2,k);
+    nbNoeuds++;
+  }
+  return nbNoeuds;
 }
 
 //afficher mon tableau arbre
-void printArbre(){
-  for(int i=0;i<511;++i){
-    printf("%i  : %i %i %i %f\n",i, arbre[i].pere,arbre[i].fg,arbre[i].fd,arbre[i].freq);
+void printArbre(unsigned int nb){
+  for(unsigned int i=0;i<nb;++i){
+    printf("%u  : %i %i %i %f\n",i, arbre[i].pere,arbre[i].fg,arbre[i].fd,arbre[i].freq);
   }
 }
-//modifier les pere des minimum
-int dexiemepartDearbre=256;
-void modifierPereEtFils(int indice1,int indice2){
-  
-  arbre[indice1].pere=dexiemepartDearbre;
-  arbre[indice2].pere=dexiemepartDearbre;
-  arbre[dexiemepartDearbre].fd= indice2;
-  arbre[dexiemepartDearbre].fg= indice1;
-  arbre[dexiemepartDearbre].freq= frequence[indice2]+frequence[indice1];
-  dexiemepartDearbre++;
-}
+
+
 int main(int argc,char* argv[]){
+  unsigned int nb;
   calculFrequence(argv[1]);
-  initArbre();
+  nb= initArbre();
   printf("%u\n",i);
-  printf("(minimum1,minimum2)->(%f,%f)\n",min1,min2);
-  modifierPereEtFils(indice1,indice2);
-  printArbre();
+  printArbre(nb);
 
   return 0;
 }
