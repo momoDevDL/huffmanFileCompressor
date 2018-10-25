@@ -1,5 +1,6 @@
 #include<stdlib.h>
 #include<stdio.h>
+#include<string.h>
 
 //definition d'un tableau de frequence
 float frequence[256];
@@ -11,6 +12,8 @@ typedef struct {float freq;int fg; int fd;int pere;}Noeud;
 Noeud arbre[511];
 unsigned int cmpt = 0;
 unsigned int i=0;
+
+
 void calculFrequence(char * fichier){
   char buffer[1];
   FILE* fd= fopen(fichier,"r");
@@ -30,7 +33,7 @@ void calculFrequence(char * fichier){
     }
   }else{
     printf("le flux de lecture de fichier n'a pas ete bien ouvert");
-  }    
+  }
 }
 
 //modifier les pere des minimum
@@ -38,16 +41,16 @@ void calculFrequence(char * fichier){
 void modifierPereFilsFrequence(int indice1,int indice2,unsigned int k){
   arbre[indice1].pere=k;
   arbre[indice2].pere=k;
-  arbre[k].fd= indice2;
-  arbre[k].fg= indice1;
+  arbre[k].fd= indice1;
+  arbre[k].fg= indice2;
   arbre[k].freq= arbre[indice2].freq + arbre[indice1].freq;
 }
 
 //initialisation de mon arbre
 
 unsigned int initArbre(){
-  int j=0;
-  for(j;j<511;j++){
+  int j;
+  for(j=0;j<511;j++){
     arbre[j].pere=-1 ;
     arbre[j].fg=-1;
     arbre[j].fd=-1;
@@ -90,10 +93,27 @@ unsigned int initArbre(){
   return nbNoeuds;
 }
 
+
+
+void parcoursCode(int nbNoeuds,char* code){
+  if(arbre[nbNoeuds].fg !=-1){
+    char* ncode=(char*)malloc(strlen(code)+1);
+    strcpy(ncode,code);
+    ncode[strlen(code)]='0';
+    parcoursCode(arbre[nbNoeuds].fg,ncode);
+    ncode[strlen(code)]='1';
+    parcoursCode(arbre[nbNoeuds].fd,ncode);
+     
+  }else{
+    printf("%s\n",code);
+    
+  }
+}
+
 //afficher mon tableau arbre
 void printArbre(unsigned int nb){
   for(unsigned int i=0;i<nb;i++){
-    printf("%u  : %i %i %i %f\n",i, arbre[i].pere,arbre[i].fg,arbre[i].fd,arbre[i].freq);
+    printf("%u  : %i %i %i %f\n",i,arbre[i].fg,arbre[i].fd, arbre[i].pere,arbre[i].freq);
   }
 }
 
@@ -101,8 +121,9 @@ void printArbre(unsigned int nb){
 int main(int argc,char* argv[]){
   unsigned int nb;
   calculFrequence(argv[1]);
-  nb=initArbre();
+  nb=initArbre()-1;
   printArbre(nb);
+  parcoursCode(nb,"");
 
   return 0;
 }
