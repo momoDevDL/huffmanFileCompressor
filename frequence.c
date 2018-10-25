@@ -1,5 +1,6 @@
 #include<stdlib.h>
 #include<stdio.h>
+#include<string.h>
 
 //definition d'un tableau de frequence
 float frequence[256];
@@ -38,8 +39,8 @@ void calculFrequence(char * fichier){
 void modifierPereFilsFrequence(int indice1,int indice2,unsigned int k){
   arbre[indice1].pere=k;
   arbre[indice2].pere=k;
-  arbre[k].fd= indice2;
-  arbre[k].fg= indice1;
+  arbre[k].fd= indice1;
+  arbre[k].fg= indice2;
   arbre[k].freq= arbre[indice2].freq + arbre[indice1].freq;
 }
 
@@ -67,7 +68,7 @@ unsigned int initArbre(){
   unsigned int nbNoeuds=256;
   
   while(arbre[nbNoeuds-1].freq<1.0 && nbNoeuds<511){
-    k=0; min1=1.0; min2=2.0;
+    k=0; min1=1.0; min2=1.0;
     while(k<nbNoeuds){
       if( arbre[k].freq<min1 && arbre[k].freq != 0.0 && arbre[k].pere==-1 ){
 	min2=min1;
@@ -78,18 +79,42 @@ unsigned int initArbre(){
       }else if(arbre[k].freq<min2 && arbre[k].freq!=0.0 && arbre[k].pere==-1){
 	min2=arbre[k].freq;
 	indice2=k;
+
+
       }
       k++;
     }
     modifierPereFilsFrequence(indice1,indice2,k);
-      printf("le nombre de noeud mnt avant incrementation est : %u\n",nbNoeuds);
+    //printf("le nombre de noeud mnt avant incrementation est : %u\n",nbNoeuds);
     nbNoeuds++;
-      printf("le nombre de noeud mnt apres incrementation est : %u\n",nbNoeuds);
+    //      printf("le nombre de noeud mnt apres incrementation est : %u\n",nbNoeuds);
   }
   printf("le nombre de noeud total est : %u\n",nbNoeuds);
   return nbNoeuds;
 }
 
+//generation de code binaire(methode recursive)
+
+void parcoursCode(int nbNoeuds,char *code){
+  // printf("%i",arbre[nbNoeuds].fg);;
+  if(arbre[nbNoeuds].fg!=-1){
+    char *ncode=(char*)malloc(strlen(code)+1);
+    strcpy(ncode,code);
+    ncode[strlen(code)]='0';
+    ncode[strlen(code)+1]='\0';
+    parcoursCode(arbre[nbNoeuds].fg,ncode);
+    ncode[strlen(code)]='1';
+    ncode[strlen(code)+1]='\0';
+    parcoursCode(arbre[nbNoeuds].fd,ncode);
+  }else{
+    if(arbre[arbre[arbre[nbNoeuds].pere].fg].fg==-1 && code[strlen(code)-1]=='0')
+      printf("%c->%s\n",arbre[arbre[nbNoeuds].pere].fg,code);
+    else{
+      if(arbre[arbre[arbre[nbNoeuds].pere].fd].fd==-1)
+	printf("%c->%s\n",arbre[arbre[nbNoeuds].pere].fd,code);
+    }
+  }
+}
 //afficher mon tableau arbre
 void printArbre(unsigned int nb){
   for(unsigned int i=0;i<nb;i++){
@@ -97,12 +122,13 @@ void printArbre(unsigned int nb){
   }
 }
 
-
 int main(int argc,char* argv[]){
   unsigned int nb;
   calculFrequence(argv[1]);
   nb=initArbre();
   printArbre(nb);
+  parcoursCode(nb-1,"");
+  
 
   return 0;
 }
