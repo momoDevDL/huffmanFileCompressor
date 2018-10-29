@@ -127,8 +127,7 @@ int main(int argc,char* argv[]){
   calculFrequence(argv[1]);
   nb=initArbre();
   printArbre(nb);
-  parcoursCode(nb-1,"");
+  parcoursCode(nb-1,code);
   
-
   return 0;
 }
