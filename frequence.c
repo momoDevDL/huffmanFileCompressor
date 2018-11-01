@@ -10,17 +10,17 @@ typedef struct {float freq;int fg; int fd;int pere;}Noeud;
 
 //declaration d'un tableau de noeud qu'on appelle arbre
 Noeud arbre[511];
-unsigned int cmpt = 0;
-unsigned int i=0;
+unsigned int cmpt = 0;//indice pour parcourir le tableau de frequence et pouvoir assigné pour
+// chaque char sa frequence 
+unsigned int i=0;//indice pour le nombre de carctere lu 
 void calculFrequence(char * fichier){
   char buffer[1];
   FILE* fd= fopen(fichier,"r");
-  
   if(fd){
     while(fread(buffer,1,1,fd)){ //je lis dans fd 1 caractere de taile 1 octet sur buffer
       printf("%c %i\n",buffer[0],buffer[0]);// j'affiche le caractere lu et son code ASCII
-      frequence[buffer[0]]++;
-      i++;
+      frequence[buffer[0]]++;// en lisant le char j'incremente sa cellule associé dans le tablau frequence
+      i++; 
     }
     while(cmpt<256){
       if(frequence[cmpt] != 0){
@@ -34,7 +34,7 @@ void calculFrequence(char * fichier){
   }
 }
 
-//modifier les pere des minimum
+//modifier les pere fils et frequence des minimums et neouds associé
 
 void modifierPereFilsFrequence(int indice1,int indice2,unsigned int k){
   arbre[indice1].pere=k;
@@ -79,17 +79,15 @@ unsigned int initArbre(){
       }else if(arbre[k].freq<min2 && arbre[k].freq!=0.0 && arbre[k].pere==-1){
 	min2=arbre[k].freq;
 	indice2=k;
-
-
       }
       k++;
     }
     modifierPereFilsFrequence(indice1,indice2,k);
     //printf("le nombre de noeud mnt avant incrementation est : %u\n",nbNoeuds);
     nbNoeuds++;
-    //      printf("le nombre de noeud mnt apres incrementation est : %u\n",nbNoeuds);
+    // printf("le nombre de noeud mnt apres incrementation est : %u\n",nbNoeuds);
   }
-  printf("le nombre de noeud total est : %u\n",nbNoeuds);
+  printf("le nombre de noeud total est : %u\n",nbNoeuds-255);
   return nbNoeuds;
 }
 
@@ -127,7 +125,6 @@ int main(int argc,char* argv[]){
   calculFrequence(argv[1]);
   nb=initArbre();
   printArbre(nb);
-  parcoursCode(nb-1,code);
-  
+  parcoursCode(nb-1,"");
   return 0;
 }
