@@ -1,10 +1,12 @@
 #include<stdlib.h>
 #include<stdio.h>
 #include<string.h>
+#include<math.h>
 
-//definition d'un tableau de frequence
+//declaration d'un tableau de frequence
 float frequence[256];
-
+//declaration d'un tableau pour les codes binaires 
+ char *bin[257];
 //definition de la structure Noeud
 typedef struct {float freq;int fg; int fd;int pere;}Noeud;
 
@@ -94,7 +96,6 @@ unsigned int initArbre(){
 //generation de code binaire(methode recursive)
 
 void parcoursCode(int nbNoeuds,char *code){
-  // printf("%i",arbre[nbNoeuds].fg);;
   if(arbre[nbNoeuds].fg!=-1){
     char *ncode=(char*)malloc(strlen(code)+1);
     strcpy(ncode,code);
@@ -111,8 +112,52 @@ void parcoursCode(int nbNoeuds,char *code){
       if(arbre[arbre[arbre[nbNoeuds].pere].fd].fd==-1)
 	printf("%c->%s\n",arbre[arbre[nbNoeuds].pere].fd,code);
     }
+      bin[nbNoeuds]=strdup(code);
   }
 }
+
+void compression(char *fichier,char *fichier2){
+  char buffer[1];
+  char buffer2[262];
+  int i,d=0;
+  double r=0;
+  FILE*fr=fopen(fichier,"r");
+  FILE*fw=fopen(fichier2,"w");
+  if(fr && fw){
+    while(fread(buffer,1,1,fr)){
+	for(i=0;i<strlen(bin[buffer[0]]);i++){
+	  buffer2[d]=bin[buffer[0]][i];
+	  d++;
+	}
+	while(d>=8){
+	  for(int j=0;j<8;j++){
+	    r+=pow(buffer2[j],2); 
+	  }
+	  fputc(r,fw);
+	  for(int k=0;0<254;k++){
+	    buffer2[k]=buffer2[k+8];
+	  }
+	  d-=8;
+	}
+    }
+    if(d!=0){
+      for(int e=d;i<8;e++){
+	buffer2[e]='0';
+      }
+       for(int j=0;j<8;j++){
+	    r+=pow(buffer2[j],2); 
+	  }
+	  fputc(r,fw);
+	  for(int k=0;0<254;k++){
+	    buffer2[k]=buffer2[k+8];
+	  }
+	  d-=8;
+    }
+  }else{
+	printf("erreur d'ouverture de fichier");
+  }
+}
+     
 //afficher mon tableau arbre
 void printArbre(unsigned int nb){
   for(unsigned int i=0;i<nb;i++){
@@ -122,9 +167,11 @@ void printArbre(unsigned int nb){
 
 int main(int argc,char* argv[]){
   unsigned int nb;
+  bin[256]=NULL;
   calculFrequence(argv[1]);
   nb=initArbre();
   printArbre(nb);
   parcoursCode(nb-1,"");
+  compression(argv[1],argv[2]);
   return 0;
 }
