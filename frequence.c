@@ -12,16 +12,17 @@ typedef struct {float freq;int fg; int fd;int pere;}Noeud;
 
 //declaration d'un tableau de noeud qu'on appelle arbre
 Noeud arbre[511];
-unsigned int cmpt = 0;//indice pour parcourir le tableau de frequence et pouvoir assigné pour
-// chaque char sa frequence 
-unsigned int i=0;//indice pour le nombre de carctere lu 
+unsigned int cmpt = 0;//indice pour parcourir le tableau de frequence
+                      //et pouvoir assigné une frequence pour chaque char  
+unsigned int i=0;//indice pour le nombre de carctere lu
 void calculFrequence(char * fichier){
   char buffer[1];
   FILE* fd= fopen(fichier,"r");
   if(fd){
     while(fread(buffer,1,1,fd)){ //je lis dans fd 1 caractere de taile 1 octet sur buffer
       printf("%c %i\n",buffer[0],buffer[0]);// j'affiche le caractere lu et son code ASCII
-      frequence[buffer[0]]++;// en lisant le char j'incremente sa cellule associé dans le tablau frequence
+      frequence[buffer[0]]++;// en lisant le char j'incremente sa cellule
+      //associé dans le tablau frequence
       i++; 
     }
     while(cmpt<256){
@@ -36,7 +37,7 @@ void calculFrequence(char * fichier){
   }
 }
 
-//modifier les pere fils et frequence des minimums et neouds associé
+//modifier le pere fils et frequence des minimums et noeuds associé
 
 void modifierPereFilsFrequence(int indice1,int indice2,unsigned int k){
   arbre[indice1].pere=k;
@@ -48,7 +49,7 @@ void modifierPereFilsFrequence(int indice1,int indice2,unsigned int k){
 
 //initialisation de mon arbre
 
-unsigned int initArbre(){
+void  initArbre(){
   int j=0;
   for(j;j<511;j++){
     arbre[j].pere=-1 ;
@@ -60,13 +61,15 @@ unsigned int initArbre(){
       arbre[j].freq=0.0;
     }
   }
+}
   
-  //recherche des mins et creation des noeuds
-   //calcul des minimums
-  float min1=1.0;
-  float min2=1.0;
-  unsigned int k=0;
-  unsigned int indice1,indice2;
+//recherche des mins et creation des noeuds
+unsigned int initNoeuds(){
+  //calcul des minimums
+  float min1;
+  float min2;
+  unsigned int k;
+  unsigned int indice1=0,indice2;
   unsigned int nbNoeuds=256;
   
   while(arbre[nbNoeuds-1].freq<1.0 && nbNoeuds<511){
@@ -93,6 +96,7 @@ unsigned int initArbre(){
   return nbNoeuds;
 }
 
+
 //generation de code binaire(methode recursive)
 
 void parcoursCode(int nbNoeuds,char *code){
@@ -106,70 +110,79 @@ void parcoursCode(int nbNoeuds,char *code){
     ncode[strlen(code)+1]='\0';
     parcoursCode(arbre[nbNoeuds].fd,ncode);
   }else{
-    if(arbre[arbre[arbre[nbNoeuds].pere].fg].fg==-1 && code[strlen(code)-1]=='0')
+    if(/*arbre[arbre[arbre[nbNoeuds].pere].fg].fg==-1 &&*/ code[strlen(code)-1]=='0')
       printf("%c->%s\n",arbre[arbre[nbNoeuds].pere].fg,code);
     else{
-      if(arbre[arbre[arbre[nbNoeuds].pere].fd].fd==-1)
+      /* if(arbre[arbre[arbre[nbNoeuds].pere].fd].fd==-1)*/
 	printf("%c->%s\n",arbre[arbre[nbNoeuds].pere].fd,code);
     }
-      bin[nbNoeuds]=strdup(code);
+    bin[nbNoeuds]=strdup(code);//j'alloue un espace mémoire de la taille strlen(code)
+    //dans la cellule numero nbNoeuds de tableau bin et je copie dedans la chaine
+    //de caractère code
   }
 }
 
-void compression(char *fichier,char *fichier2){
-  char buffer[1];
-  char buffer2[262];
-  int i,d=0;
-  double r=0;
-  FILE*fr=fopen(fichier,"r");
-  FILE*fw=fopen(fichier2,"w");
+void compression(char *fichier1 ,char *fichier2){
+  char buffer[1]; //buffer de lecture
+  char buffer2[262];//buffer d'écriture
+  int i;
+  int r=0;//entier represantant la chaine de caractere binaire
+  //de longueur 8
+  FILE*fr=fopen(fichier1,"r"); //pointerof reading file
+  FILE*fw=fopen(fichier2,"w");//pointer of writing in the file
   if(fr && fw){
-    while(fread(buffer,1,1,fr)){
-	for(i=0;i<strlen(bin[buffer[0]]);i++){
-	  buffer2[d]=bin[buffer[0]][i];
-	  d++;
+    while(fread(buffer,1,1,fr)){ //premiere boucle de lecture dans le fichier1
+      i=0;
+      while(i<strlen(bin[buffer[0]])){    //tant que i est inferieur a la 
+	buffer2[i]=bin[buffer[0]][i];     // longueur de code binaire associé 
+	i++;                              //au caractere lu on copie ce code dans buffer2
+	printf("%c ---> lu \n",buffer[0]); 
 	}
-	while(d>=8){
+      while(i>=8){               //je calcule r pour les 8 premieres cases de buffer2
 	  for(int j=0;j<8;j++){
 	    r+=pow(buffer2[j],2); 
 	  }
-	  fputc(r,fw);
-	  for(int k=0;0<254;k++){
-	    buffer2[k]=buffer2[k+8];
+	  fputc(r,fw);            //ecrir r dans fichier2
+	  for(int k=0;k<254;k++){
+	    buffer2[k]=buffer2[k+7]; // supprimer les 8 premieres cases 
 	  }
-	  d-=8;
+	  i-=8; //je diminue alors mon indice de 8 
+	}
+	if(i!=0){
+	  for(int e=i;e<8;e++){
+	    buffer2[e]='0';
+	  }                                     //apres si il reste des case non vide
+	  for(int f=0;f<8;f++){                 //je remplie avec 0 les cases qui reste
+	    r+=pow(buffer2[f],2);             // pour atteinde 8cases et je refait l'opretion 
+	  }                                    //mentionné ci-dessus
+	  fputc(r,fw);
+	  for(int w=0;w<254;w++){
+	    buffer2[w]=buffer2[w+7];
+	  }
+	  i-=8;
 	}
     }
-    if(d!=0){
-      for(int e=d;i<8;e++){
-	buffer2[e]='0';
-      }
-       for(int j=0;j<8;j++){
-	    r+=pow(buffer2[j],2); 
-	  }
-	  fputc(r,fw);
-	  for(int k=0;0<254;k++){
-	    buffer2[k]=buffer2[k+8];
-	  }
-	  d-=8;
-    }
   }else{
-	printf("erreur d'ouverture de fichier");
+    printf("erreur dans l'ouverture de flux de lecture et d'ecriture de fichier");
   }
+  fclose(fr); //enfin la fermeture des flux de lecture
+  fclose(fw); // et d'ecriture
 }
+ 
      
-//afficher mon tableau arbre
+//afficher mon arbre
 void printArbre(unsigned int nb){
   for(unsigned int i=0;i<nb;i++){
     printf("%u  : %i %i %i %f\n",i, arbre[i].pere,arbre[i].fg,arbre[i].fd,arbre[i].freq);
   }
 }
-
+//programme principal et appel au fonction
 int main(int argc,char* argv[]){
   unsigned int nb;
   bin[256]=NULL;
   calculFrequence(argv[1]);
-  nb=initArbre();
+  initArbre();
+  nb=initNoeuds();
   printArbre(nb);
   parcoursCode(nb-1,"");
   compression(argv[1],argv[2]);
