@@ -125,43 +125,52 @@ void parcoursCode(int nbNoeuds,char *code){
 void compression(char *fichier1 ,char *fichier2){
   char buffer[1]; //buffer de lecture
   char buffer2[262];//buffer d'écriture
-  int i;
-  int r=0;//entier represantant la chaine de caractere binaire
+  int i=0,d;
+  int res=0
+    ;//entier represantant la chaine de caractere binaire
   //de longueur 8
   FILE*fr=fopen(fichier1,"r"); //pointerof reading file
   FILE*fw=fopen(fichier2,"w");//pointer of writing in the file
   if(fr && fw){
-    while(fread(buffer,1,1,fr)){ //premiere boucle de lecture dans le fichier1
-      i=0;
-      while(i<strlen(bin[buffer[0]])){    //tant que i est inferieur a la 
-	buffer2[i]=bin[buffer[0]][i];     // longueur de code binaire associé 
-	i++;                              //au caractere lu on copie ce code dans buffer2
-	printf("%c ---> lu \n",buffer[0]); 
-	}
-      while(i>=8){               //je calcule r pour les 8 premieres cases de buffer2
-	  for(int j=0;j<8;j++){
-	    r+=pow(buffer2[j],2); 
+    while(fread(buffer,1,1,fr)){          //premiere boucle de lecture dans le fichier1
+      d=0;                            
+      while(d<strlen(bin[buffer[0]])){    //tant que i est inferieur a la 
+	buffer2[i]=bin[buffer[0]][d];     // longueur de code binaire associé 
+	i++;
+	d++;     //au caractere lu on copie ce code dans buffer2
+      }
+      printf("%c est lu et le code associé est : %s \n",buffer[0],buffer2);
+      while(i>=8){                 //je calcule r pour les 8 premieres cases de buffer2
+	  for(int j=7;j>=0;j--){
+	    printf("r===> %i \n",res);
+	    res+=(pow(2,7-j)*(buffer2[j]-'0'));
+	    printf("r===> %d \n",res);
 	  }
-	  fputc(r,fw);            //ecrir r dans fichier2
+	  fprintf(fw,"%i",res);            //ecrir r dans fichier2
+	  res=0;
 	  for(int k=0;k<254;k++){
-	    buffer2[k]=buffer2[k+7]; // supprimer les 8 premieres cases 
+	    buffer2[k]=buffer2[k+8]; // supprimer les 8 premieres cases 
 	  }
-	  i-=8; //je diminue alors mon indice de 8 
-	}
+	  i-=8; //je diminue alors mon indice de 8
+      }
+    }
 	if(i!=0){
 	  for(int e=i;e<8;e++){
 	    buffer2[e]='0';
 	  }                                     //apres si il reste des case non vide
-	  for(int f=0;f<8;f++){                 //je remplie avec 0 les cases qui reste
-	    r+=pow(buffer2[f],2);             // pour atteinde 8cases et je refait l'opretion 
+	  for(int f=7;f>=0;f--){
+	    printf("r===> %i \n",res);            //je remplie avec 0 les cases qui reste
+	    res=res+(pow(2,7-f)*(buffer2[f]-'0'));      // pour atteinde 8cases et je refait l'opretion
+	    printf("r===> %i \n",res);
 	  }                                    //mentionné ci-dessus
-	  fputc(r,fw);
+	  
+	  fprintf(fw,"%i",res);
+	  res=0;
 	  for(int w=0;w<254;w++){
 	    buffer2[w]=buffer2[w+7];
 	  }
 	  i-=8;
 	}
-    }
   }else{
     printf("erreur dans l'ouverture de flux de lecture et d'ecriture de fichier");
   }
