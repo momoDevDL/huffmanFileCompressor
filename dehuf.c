@@ -3,95 +3,233 @@
 #include<string.h>
 #include<math.h>
 
-void decompression(char* fichier){
-  char buffer[1];
-  unsigned int binbuf;
+
+//definition de la structure Noeud
+typedef struct {float freq;int fg; int fd;int pere;}Noeud;
+
+//declaration d'un tableau de noeud qu'on appelle arbre
+Noeud arbre[511];
+
+unsigned int maxEntete=0;
+unsigned int mode=2;
+unsigned int tailleF=0;
+//indice pour le nombre de carctere contenu dans le fichier
+
+
+void  initArbre(){
+  
+  for(int j=0;j<511;j++){
+    
+    arbre[j].pere=-1 ;
+    arbre[j].fg=-1;
+    arbre[j].fd=-1;
+    arbre[j].freq=0.0;
+    
+  }
+}
+
+
+//afficher mon arbre
+void printArbre(unsigned int nb){
+  
+  for(unsigned int i=0;i<nb;i++){
+    
+    printf("%u  : %i %i %i %f\n",i, arbre[i].pere,arbre[i].fg,arbre[i].fd,arbre[i].freq);
+    
+  }
+}
+
+
+unsigned int decompressionEntete(char* fichier){
+  unsigned char buffer[1];
+  unsigned int binbuf=0;
   unsigned int i=0;
-  unsigned int j=0;
-  unsigned int tailleF=0;
-  unsigned int nb=0;
-  unsigned int trouve=0;
-  int tb=0;
-  char tc;
-  unsigned int ii=0;
-  char *bin[257];
-  bin[256]=NULL;
-  char* code="";
+  unsigned int i2=2;
+  unsigned int nb=255;
+  unsigned int pereNb=0;
+  unsigned int entete=1;
+  unsigned int bufPereNb=0;
+  unsigned int bufTailleF=0;
+  unsigned int verifTailleF=0;
   FILE*fr=fopen(fichier,"r"); //pointer of reading file
+  
   if(fr){
    
-    while(fread(buffer,1,1,fr)){ //premiere boucle de lecture dans le fichier1
+    while((fread(buffer,1,1,fr))&&(entete)){ //premiere boucle de lecture dans le fichier1
+      
       i++;
-      if (buffer[0]<0){
-	binbuf=128+(128 + buffer[0]);
-      }else{
+      //printf("%c %i\n",buffer[0],buffer[0]);
+
+      if (buffer[0]>=0){
+	
 	binbuf=buffer[0];
+	
       }
+      
       //entête décompression-----------------------------------------------
+      
       if(i==2){
-	tailleF=binbuf;
-      }else if(i==3){
-        nb=binbuf;
-      }else if((i>3)&&(nb>0)){
-	if(ii==0){
-	  tc=binbuf;
-	}else if(ii==1){
-	  tb=binbuf;
-	}else if(ii>1){
-	  j=8;
-	  while ((tb>0)||(j>0)){
-	    j--;
-	    char *ncode=(char*)malloc(strlen(code)+1);
-	    strcpy(ncode,code);
-	    if(binbuf>=(1*pow(2,j))){
-	      ncode[strlen(code)]='1';
-	      binbuf=binbuf-(1*pow(2,j));
-	    }else{
-	      ncode[strlen(code)]='0';
-	    }
-	    ncode[strlen(code)+1]='\0';
-	    tb--;
-	  }
-	}else if(tb<=0){
-	  bin[tc]=strdup(code);
-	  ii=0;
-	  nb--; 
+	
+	nb+=binbuf;
+	pereNb=nb;
+	
+      }else if((i>=3)&&!(verifTailleF)){
+	
+	bufTailleF+=binbuf;
+	
+        if (binbuf<255){
+	  
+	  tailleF=bufTailleF;
+	  verifTailleF=1;
+	  
 	}
-	//-----------------------------------------------------------------
-      }else if((i>3)&&(nb<=0)){
-	 j=8;
-	 trouve=0;
-	 while (j>0){
-	    j--;
-	    char *ncode=(char*)malloc(strlen(code)+1);
-	    strcpy(ncode,code);
-	    if(binbuf>=(1*pow(2,j))){
-	      ncode[strlen(code)]='1';
-	      binbuf=binbuf-(1*pow(2,j));
-	    }else{
-	      ncode[strlen(code)]='0';
-	    }
-	    ncode[strlen(code)+1]='\0';
+	
+      }else if((arbre[256].fd)!=-1){
+	
+	entete=0;
+	
+      }else if((i>3)&&(nb>0)&&(entete)){
+
+	if(i2==4){
+	  
+	  if(binbuf==255){
 	    
-	    while ((trouve==0)&&(j<256)){
-	      if ((strcmp(bin[j],code))==0){
-		trouve=1;
-	      }
-	      j++;
+	    bufPereNb=binbuf;
+	    i2--;
+	    
+	  }else if (binbuf<255){
+	    
+	    arbre[pereNb].fg=binbuf;
+	    arbre[binbuf].pere=pereNb;
+	    i2=i2-2;
+	    
+	  }
+	  
+	}else if(i2==3){
+	  
+	  arbre[pereNb].fg=binbuf+255;
+	  arbre[binbuf+255].pere=pereNb;
+	  i2--;
+	  
+        }else if(i2==2){
+	  
+	  if(binbuf==255){
+	    
+	    bufPereNb=binbuf;
+	    i2--;
+	    
+	  }else if (binbuf<255){
+	    
+	    arbre[pereNb].fd=binbuf;
+	    arbre[binbuf].pere=pereNb;
+	    i2=i2-2;
+	    
+	  }
+	  
+        }else if(i2==1){
+	  
+	  arbre[pereNb].fd=binbuf+255;
+	  arbre[binbuf+255].pere=pereNb;
+	  i2--;
+	  
+	}
+	
+	if(i2==0){
+	  
+	  pereNb--;
+	  i2=4;
+	}
+      }
+      //----------------------------------------------------------------
+    }
+    
+    
+  }else{
+    
+    printf("erreur dans l'ouverture de flux de lecture et d'ecriture de fichier");
+  }
+  maxEntete=i;
+  fclose(fr);
+  
+  return nb;
+  
+}
+
+void decompression(char* fichier,unsigned int nb){
+  char buffer[1];
+  unsigned int binbuf=0;
+  unsigned int i=0;
+  unsigned int j=0;
+  unsigned int r=nb;
+  unsigned int tailleFA=0;
+  FILE*fr=fopen(fichier,"r"); //pointer of reading file
+  
+  if(fr){
+
+    printf("-----------------------------------------------\n");
+    printf("Debut de la decompression.\n");
+    printf("-----------------------------------------------\n");
+    
+    while(fread(buffer,1,1,fr)){ //premiere boucle de lecture dans le fichier1
+      
+      i++;
+      
+      if (i>=maxEntete){
+	
+	if (buffer[0]>=0){
+	  
+	  binbuf=buffer[0];
+	  
+	}else if (buffer[0]<0){
+	  
+	  binbuf=128+(128 + buffer[0]);
+	  
+	}
+	j=8;
+	
+	while (j>0){
+	  
+	  j--;
+	  
+	  if (tailleFA!=tailleF){
+	    
+	    if((r<256)&&(r>=0)){
+	      
+	      printf("%c",r);
+	      r=nb;
+	      tailleFA++;
+	      
 	    }
-	    if (trouve!=0){
-	      printf("%c",j);
-	      trouve=0;
-	      code=(char*)malloc(1);
-	      code="";
+	    
+	    if(binbuf>=(1*pow(2,j))){
+	      
+	      r=arbre[r].fd;
+	      binbuf=binbuf-(1*pow(2,j));
+	      
+	    }else if ((arbre[r].fg)!=-1){
+	      
+	      r=arbre[r].fg;
 	    }
-	 } 
+	  }
+	} 
       }
     }
     
+    if (tailleFA==tailleF){
+      
+      printf("\n-----------------------------------------------\n");
+      printf("Decompression terminé, le fichier alors généré est de taille %i Octets. \n",tailleFA);
+      printf("-----------------------------------------------\n");
+      
+    }
+   
+ 
   }else{
+    
     printf("erreur dans l'ouverture de flux de lecture et d'ecriture de fichier");
+    
   }
+  
   fclose(fr); 
 }
 
@@ -99,52 +237,92 @@ void decompression1(char* fichier){
   char buffer[1];
   unsigned int i=1;
   unsigned int c;
-  unsigned int nbtotal;
+  unsigned int nbtotal=0;
+  unsigned int nbTotal=0;
   FILE* fd= fopen(fichier,"r");
   
   if(fd){
+
+    printf("-----------------------------------------------\n");
+    printf("Debut de la decompression.\n");
+    printf("-----------------------------------------------\n");
+    
     while(fread(buffer,1,1,fd)){
-      printf("%c %i\n",buffer[0],buffer[0]);
+      
+      //printf("%c %i\n",buffer[0],buffer[0]);
+      
       if (i==1){
-	//truc
+	
       }else if (i==2){
+	
 	c=buffer[0];
+	
       }else if (i>=3){
+	
 	if (buffer[0]<0){
+	  
 	  nbtotal+=(128+(128+buffer[0]));
-	}else{
+	  
+	}else if (buffer[0]>=0){
+	  
 	  nbtotal+=buffer[0];
+	  
 	}
       }
       i++;
     }
     
-    printf("%i\n",nbtotal);
+    nbTotal=nbtotal;
+    
   }else{
+    
     printf("le flux de lecture de fichier n'a pas ete bien ouvert");
+    
   }
-  /* while (nbtotal > 0){
+   while (nbtotal > 0){
+     
     printf("%c",c);
     nbtotal--;
-    }*/
-  printf("\n");
-  printf("FIN\n");
+    }
+   
+   printf("\n-----------------------------------------------\n");
+   printf("Decompression terminé, le fichier alors généré est de taille %i Octets. \n",nbTotal);
+   printf("-----------------------------------------------\n");
+  
 }
 
-
 int main(int argc,char* argv[]){
-  unsigned int mode=2;
+  unsigned int nb;
   FILE* fd= fopen(argv[1],"r");
+  
   if(fd){
+    
     mode=fgetc(fd);
+    
   }else{
+    
     printf("le flux de lecture de fichier n'a pas ete bien ouvert");
+    
   }
 
-  if (mode==1){
+  if (mode==0){
+    
+    initArbre();
+    
+    nb=decompressionEntete(argv[1]);
+    
+    //printArbre(nb);
+    
+    decompression(argv[1],nb-1);
+    
+  } else if(mode==1){
+    
     decompression1(argv[1]);
-  } else if(mode==0){
-    decompression(argv[1]);
+    
+  } else if(mode==2){
+    
+    printf("Erreur décompression impossible");
+    
   }
 }
 
