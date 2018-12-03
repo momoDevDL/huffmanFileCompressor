@@ -3,24 +3,14 @@
 #include<string.h>
 #include<math.h>
 
-//declaration d'un tableau de frequence
+
 float frequence[256];
-
-//declaration d'un tableau pour les codes binaires 
- char *bin[257];
-
-//definition de la structure Noeud
+char *bin[257];
 typedef struct {float freq;int fg; int fd;int pere;}Noeud;
-
-//declaration d'un tableau de noeud qu'on appelle arbre
 Noeud arbre[511];
-
 unsigned int mode = 0;
-//indice pour le nombre de carctere contenu dans le fichier
-
 unsigned int tailleF=0;
 unsigned int tailleFA=0;
-//taille du fichier à comprésser=tailleF; taille du fichier compréssé=tailleFA
 
 void calculFrequence(char * fichier){
   unsigned char buffer[1];
@@ -32,9 +22,6 @@ void calculFrequence(char * fichier){
   if(fd){
     
     while(fread(buffer,1,1,fd)){
-      //je lis dans fd 1 caractere de taile 1 octet sur buffer
-      //printf("%c %i\n",buffer[0],buffer[0]);
-      // j'affiche le caractere lu et son code ASCII
      
       if (buffer[0]==0){
 	
@@ -43,8 +30,6 @@ void calculFrequence(char * fichier){
       
       buffer[0]>=0 ? frequence[buffer[0]]++ : frequence[buffer2]++;
       
-      // en lisant le char j'incremente sa cellule
-      //associé dans le tablau frequence
       tailleF++;
       
     }
@@ -56,7 +41,6 @@ void calculFrequence(char * fichier){
 	
 	frequence[cmpt]/=tailleF;
 	nbdif++;
-	//	printf("%u-> %f\n",cmpt,frequence[cmpt]);
 	printf("ASCII(%i) correspondant au Char(%c) =  %f%% d'apparition dans le fichier. \n",cmpt,cmpt,frequence[cmpt]);
       }
       cmpt++;
@@ -85,8 +69,6 @@ void calculFrequence(char * fichier){
 }
 
 
-//modifier le pere fils et frequence des minimums et noeuds associé
-
 void modifierPereFilsFrequence(int indice1,int indice2,unsigned int k){
   arbre[indice1].pere=k;
   arbre[indice2].pere=k;
@@ -95,7 +77,6 @@ void modifierPereFilsFrequence(int indice1,int indice2,unsigned int k){
   arbre[k].freq= arbre[indice2].freq + arbre[indice1].freq;
 }
 
-//initialisation de mon arbre
 
 void  initArbre(){
   
@@ -116,9 +97,7 @@ void  initArbre(){
   }
 }
   
-//recherche des mins et creation des noeuds
 unsigned int initNoeuds(){
-  //calcul des minimums
   float min1;
   float min2;
   unsigned int k;
@@ -148,17 +127,15 @@ unsigned int initNoeuds(){
     }
     
     modifierPereFilsFrequence(indice1,indice2,k);
-    //printf("le nombre de noeud mnt avant incrementation est : %u\n",nbNoeuds);
+   
     nbNoeuds++;
-    // printf("le nombre de noeud mnt apres incrementation est : %u\n",nbNoeuds);
+    
   }
-  //printf("le nombre de noeud total est : %u\n",nbNoeuds-255);
+ 
   return nbNoeuds;
   
 }
 
-
-//generation de code binaire(methode recursive)
 
 void parcoursCode(int nbNoeuds,char *code){
   
@@ -181,9 +158,7 @@ void parcoursCode(int nbNoeuds,char *code){
       
     }else{
       
-      bin[nbNoeuds]=strdup(code);//j'alloue un espace mémoire de la taille strlen(code)
-      //dans la cellule numero nbNoeuds de tableau bin et je copie dedans la chaine
-      //de caractère code
+      bin[nbNoeuds]=strdup(code);
     }
   }
 }
@@ -193,18 +168,18 @@ void parcoursCode(int nbNoeuds,char *code){
 
 
 void compression(char *fichier1 ,char *fichier2,unsigned int nb){
-  unsigned char buffer[1]; //buffer de lecture
-  char buffer2[262];//buffer d'écriture
+  unsigned char buffer[1]; 
+  char buffer2[262];
   unsigned int ip=0;
   unsigned int i=0;
-  unsigned int r=0;//entier represantant la chaine de caractere binaire
+  unsigned int r=0;
   unsigned int TailleF=tailleF;
   float fTailleF;
   float fTailleFA;
   unsigned int base=255;
   unsigned int pereNb=0;
-  FILE*fr=fopen(fichier1,"r"); //pointer of reading file
-  FILE*fw=fopen(fichier2,"w");//pointer of writing in the file
+  FILE*fr=fopen(fichier1,"r"); 
+  FILE*fw=fopen(fichier2,"w");
   
   if(fr && fw){
     
@@ -258,42 +233,37 @@ void compression(char *fichier1 ,char *fichier2,unsigned int nb){
     //-----------------------------------------------------
     while(fread(buffer,1,1,fr)){
 
-      //premiere boucle de lecture dans le fichier1
-      // printf("%c ---> lu \n",buffer[0]);
+      
       i=0;
       
-      while(i<strlen(bin[buffer[0]])){    //tant que i est inferieur a la
+      while(i<strlen(bin[buffer[0]])){    
 	
-	buffer2[ip]=bin[buffer[0]][i];     // longueur de code binaire associé
-	//	printf("%c à pour binaire: %c \n",buffer[0],bin[buffer[0]][i]); //au caractere lu
+	buffer2[ip]=bin[buffer[0]][i];    
 	i++;
-	ip++;//on copie ce code dans buffer2
+	ip++;
 	
       }
       
-      while(ip>=8){               //je calcule r pour les 8 premieres cases de buffer2
-	//	printf("%i \n",ip);
+      while(ip>=8){              
 	
 	for(int j=7;j>=0;j--){
 	  
 	  const char buf=buffer2[j];
-	  //	  printf("buf = %c \n",buf);
 	  r=r+(pow(2,7-j)*atoi(&buf));
-	  //	  printf("%i \n",r);
+	  
 	}
 	
-	//	printf("la valeur écrite dans le fichier est %i \n",r);
-	fputc(r,fw);            //ecrir r dans fichier2
+	fputc(r,fw);            
 	tailleFA++;
 	
 	for(int k=0;k<254;k++){
 	  
-	  buffer2[k]=buffer2[k+8]; // supprimer les 8 premieres cases 
+	  buffer2[k]=buffer2[k+8]; 
 	}
 	
-	ip=ip-8; //je diminue alors mon indice de 8
+	ip=ip-8; 
 	r=0;
-	//	printf("%i \n",ip);
+   
       }
     }
     
@@ -304,16 +274,14 @@ void compression(char *fichier1 ,char *fichier2,unsigned int nb){
 	buffer2[e]='0';
 	ip++;
 	
-      }                                     //apres si il reste des case non vide
-      //   printf("%i \n",ip);
+      }                                  
       
       for(int j=7;j>=0;j--){
 	
 	const char buf=buffer2[j];
-	//	printf("buf = %c \n",buf);
 	r=r+(pow(2,7-j)*atoi(&buf));
-	//	printf("%i \n",r);
-      }                                   //mentionné ci-dessus
+	
+      }                                
       
       fputc(r,fw);
       tailleFA++;
@@ -325,7 +293,6 @@ void compression(char *fichier1 ,char *fichier2,unsigned int nb){
       }
       
       ip-=8;
-      // printf("%i \n",ip);
       
     }
     
@@ -333,8 +300,8 @@ void compression(char *fichier1 ,char *fichier2,unsigned int nb){
     
     printf("erreur dans l'ouverture de flux de lecture et d'ecriture de fichier.\n");
   }
-  fclose(fr); //enfin la fermeture des flux de lecture
-  fclose(fw); // et d'ecriture
+  fclose(fr); 
+  fclose(fw);
 
   fTailleF=tailleF;
   fTailleFA=tailleFA;
@@ -363,14 +330,12 @@ void compression2(char *fichier1 ,char *fichier2){
     tailleFA++;
     fputc(i,fw);
     tailleFA++;
-    //printf("%i %i %i \n",mode,i,tailleF);
     
     while (TailleF>base){
       
      fputc(base,fw);
      tailleFA++;
      TailleF=TailleF-base;
-     //printf("%c",base);
      
     }
     fputc(TailleF,fw);
@@ -391,8 +356,7 @@ void compression2(char *fichier1 ,char *fichier2){
   
 }
  
-     
-//afficher mon arbre
+
 void printArbre(unsigned int nb){
   
   for(unsigned int i=0;i<nb;i++){
@@ -428,7 +392,7 @@ void printCodeCharEtMoyenne(){
   
 }
 
-//programme principal et appel au fonction
+
 int main(int argc,char* argv[]){
   unsigned int nb;
   bin[256]=NULL;

@@ -4,16 +4,12 @@
 #include<math.h>
 
 
-//definition de la structure Noeud
+
 typedef struct {float freq;int fg; int fd;int pere;}Noeud;
-
-//declaration d'un tableau de noeud qu'on appelle arbre
 Noeud arbre[511];
-
 unsigned int maxEntete=0;
 unsigned int mode=2;
 unsigned int tailleF=0;
-//indice pour le nombre de carctere contenu dans le fichier
 
 
 void  initArbre(){
@@ -28,8 +24,6 @@ void  initArbre(){
   }
 }
 
-
-//afficher mon arbre
 void printArbre(unsigned int nb){
   
   for(unsigned int i=0;i<nb;i++){
@@ -51,14 +45,13 @@ unsigned int decompressionEntete(char* fichier){
   unsigned int bufPereNb=0;
   unsigned int bufTailleF=0;
   unsigned int verifTailleF=0;
-  FILE*fr=fopen(fichier,"r"); //pointer of reading file
+  FILE*fr=fopen(fichier,"r"); 
   
   if(fr){
    
-    while((fread(buffer,1,1,fr))&&(entete)){ //premiere boucle de lecture dans le fichier1
+    while((fread(buffer,1,1,fr))&&(entete)){ 
       
       i++;
-      //printf("%c %i\n",buffer[0],buffer[0]);
 
       if (buffer[0]>=0){
 	
@@ -162,7 +155,7 @@ void decompression(char* fichier,unsigned int nb,char* dest){
   unsigned int j=0;
   unsigned int r=nb;
   unsigned int tailleFA=0;
-  FILE*fr=fopen(fichier,"r"); //pointer of reading file
+  FILE*fr=fopen(fichier,"r");
   FILE*fw=fopen(dest,"w");
   
   if(fr){
@@ -171,7 +164,7 @@ void decompression(char* fichier,unsigned int nb,char* dest){
     printf("Debut de la decompression.\n");
     printf("-----------------------------------------------\n");
 
-    while(fread(buffer,1,1,fr)){ //premiere boucle de lecture dans le fichier1
+    while(fread(buffer,1,1,fr)){ 
       
       i++;
       
@@ -260,8 +253,6 @@ void decompression1(char* fichier){
     
     while(fread(buffer,1,1,fd)){
       
-      //printf("%c %i\n",buffer[0],buffer[0]);
-      
       if (i==1){
 	
       }else if (i==2){
@@ -322,8 +313,6 @@ int main(int argc,char* argv[]){
     initArbre();
     
     nb=decompressionEntete(argv[1]);
-    
-    //printArbre(nb);
 
     if (argv[2]!=NULL){
 
