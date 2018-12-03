@@ -27,13 +27,11 @@ void calculFrequence(char * fichier){
   unsigned int buffer2;
   FILE* fd= fopen(fichier,"r");
   unsigned int nbdif=0;
-  unsigned int cmpt = 0;//indice pour parcourir le tableau de frequence
-                      //et pouvoir assigné une frequence pour chaque char
+  unsigned int cmpt = 0;
   
   if(fd){
     
     while(fread(buffer,1,1,fd)){
-      
       //je lis dans fd 1 caractere de taile 1 octet sur buffer
       //printf("%c %i\n",buffer[0],buffer[0]);
       // j'affiche le caractere lu et son code ASCII
@@ -55,6 +53,7 @@ void calculFrequence(char * fichier){
       
       if(frequence[cmpt] != 0){
 	
+	
 	frequence[cmpt]/=tailleF;
 	nbdif++;
 	//	printf("%u-> %f\n",cmpt,frequence[cmpt]);
@@ -63,8 +62,9 @@ void calculFrequence(char * fichier){
       cmpt++;
     }
     
-    if (tailleF<(3*nbdif)){
-      
+    
+    if (tailleF<(2+(tailleF/255)+(2*nbdif)+(tailleF)/8)){
+  
       mode = 2;
       
     }else if (nbdif==1){

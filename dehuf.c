@@ -155,7 +155,7 @@ unsigned int decompressionEntete(char* fichier){
   
 }
 
-void decompression(char* fichier,unsigned int nb){
+void decompression(char* fichier,unsigned int nb,char* dest){
   char buffer[1];
   unsigned int binbuf=0;
   unsigned int i=0;
@@ -163,13 +163,14 @@ void decompression(char* fichier,unsigned int nb){
   unsigned int r=nb;
   unsigned int tailleFA=0;
   FILE*fr=fopen(fichier,"r"); //pointer of reading file
+  FILE*fw=fopen(dest,"w");
   
   if(fr){
 
     printf("-----------------------------------------------\n");
     printf("Debut de la decompression.\n");
     printf("-----------------------------------------------\n");
-    
+
     while(fread(buffer,1,1,fr)){ //premiere boucle de lecture dans le fichier1
       
       i++;
@@ -194,6 +195,16 @@ void decompression(char* fichier,unsigned int nb){
 	  if (tailleFA!=tailleF){
 	    
 	    if((r<256)&&(r>=0)){
+	      
+	      if(dest!=NULL){
+
+		if (fw){
+
+		  fputc(r,fw);
+		  
+		}
+		
+	      }
 	      
 	      printf("%c",r);
 	      r=nb;
@@ -282,6 +293,7 @@ void decompression1(char* fichier){
    while (nbtotal > 0){
      
     printf("%c",c);
+    
     nbtotal--;
     }
    
@@ -301,7 +313,7 @@ int main(int argc,char* argv[]){
     
   }else{
     
-    printf("le flux de lecture de fichier n'a pas ete bien ouvert");
+    printf("le flux de lecture de fichier n'a pas ete bien ouvert.\n");
     
   }
 
@@ -312,8 +324,18 @@ int main(int argc,char* argv[]){
     nb=decompressionEntete(argv[1]);
     
     //printArbre(nb);
-    
-    decompression(argv[1],nb-1);
+
+    if (argv[2]!=NULL){
+
+      decompression(argv[1],nb-1,argv[2]);
+      
+      printf("Le fichier a été décompréssé dans: %s \n",argv[2]);
+      
+    } else {
+      
+      decompression(argv[1],nb-1,NULL);
+      
+    }
     
   } else if(mode==1){
     
@@ -321,7 +343,7 @@ int main(int argc,char* argv[]){
     
   } else if(mode==2){
     
-    printf("Erreur décompression impossible");
+    printf("Erreur décompression impossible.\n");
     
   }
 }
