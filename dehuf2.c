@@ -2,13 +2,27 @@
 #include<stdio.h>
 #include<math.h>
 #include<string.h>
+ 
+/*!
+ * \file dehufv2.c
+ * \brief Décompresseur de fichier avec la methode de Huffman 
+ * \author Antoine Afflatet / Mohamed Masbah Abou Laich
+ * \version 0.2
+ */
 
+
+ /*!
+ * \brief declaration de la fonction de decompression 
+ * selon le methode 0 
+ */
 void decompression(char * fichier){
   unsigned int tailleF=0 ;
   unsigned int nbdiff;
-  unsigned int binT;
+  int binT;
+  unsigned int binT2;
   unsigned int pos;
-  unsigned int binV;
+  unsigned int binV=0;
+  unsigned int binV2=0;
   unsigned char buffer[1];
   unsigned char  car;
   FILE *fr=fopen(fichier,"r");
@@ -16,7 +30,7 @@ void decompression(char * fichier){
   for(unsigned int k=0;k<=257;k++){
     bin[k]=NULL;
   }
-  unsigned char*binaire=(unsigned char*)malloc(8*sizeof(unsigned char));
+  unsigned char*binaire=(unsigned char*)malloc(20*sizeof(unsigned char));
   unsigned char*binaire1=(unsigned char*)malloc(262*sizeof(unsigned char));
   for(int p=0;p<262;p++){
     binaire1[p]='0';
@@ -56,26 +70,32 @@ void decompression(char * fichier){
       }else{
 	if(pos==1){
 	  binT=buffer[0];
-	   
+	  binT2=binT; 
 	  pos++;
+	  bin[car]=(unsigned char*)malloc((binT+1)*sizeof(unsigned char));
+	  bin[car][binT]='\0';
 	}else{
 	  if(pos==2){
-	    bin[car]=(unsigned char*)malloc((binT+1)*sizeof(char));
-	    bin[car][binT]='\0';
-	    binV=8;
-	    while(binV>0){
+	    binV=binV2+8;
+	    binV2=binV;
+	    while(binV>binV2-8){
 	      binaire[binV-1]= buffer[0] %2 + '0';
-	      buffer[0] /=2;
+	      buffer[0]/=2;
 	      binV--;
-
 	    }
-	    for(int i=0;i<binT;i++){
+	    // binV++;
+	    binT-=8;
+	    if(binT<=0){
+	    for(int i=0;i<binT2;i++){
 	      bin[car][i]=binaire[i];
 	    }
-	    binaire=(unsigned char*)realloc(binaire,8);
+	    //binaire=(unsigned char*)realloc(binaire,30);
 	    pos=0;
 	    nbdiff--;
+	    binV=0;
+	    binV2=0;
 	    printf("bin[%c]= %s\n",car,bin[car]);
+	    }
 	  }
 	}
       }
@@ -119,7 +139,7 @@ void decompression(char * fichier){
       pos2=0;
       tmp=0;
       pos2Decompression=0;
-	while(pos2Decompression<cmpt){
+	while(pos2Decompression<cmpt && tailleF>0){
 	  while( pos<=255 && (bin[pos]==NULL || binaire1[pos2Decompression] != bin[pos][pos2] )){
 	    pos++;
 	  }
@@ -167,8 +187,73 @@ void decompression(char * fichier){
 
     printf("erreur dans l'ouverture de flux de lecture ");
   }
+  fclose(fr);
 }
- 
+
+ /*!
+ * \brief declaration de la fonction de decompression 
+ * selon le methode 1 
+ */
+
+void decompression1(char* fichier){
+  char buffer[1];
+  unsigned int i=1;
+  unsigned int c;
+  unsigned int nbtotal=0;
+  unsigned int nbTotal=0;
+  FILE* fd= fopen(fichier,"r");
+  
+  if(fd){
+
+    printf("-----------------------------------------------\n");
+    printf("Debut de la decompression.\n");
+    printf("-----------------------------------------------\n");
+    
+    while(fread(buffer,1,1,fd)){
+      
+      if (i==1){
+	
+      }else if (i==2){
+	
+	c=buffer[0];
+	
+      }else if (i>=3){
+	
+	if (buffer[0]<0){
+	  
+	  nbtotal+=(128+(128+buffer[0]));
+	  
+	}else if (buffer[0]>=0){
+	  
+	  nbtotal+=buffer[0];
+	  
+	}
+      }
+      i++;
+    }
+    
+    nbTotal=nbtotal;
+    
+  }else{
+    
+    printf("le flux de lecture de fichier n'a pas ete bien ouvert");
+    
+  }
+   while (nbtotal > 0){
+     
+    printf("%c",c);
+    
+    nbtotal--;
+    }
+   
+   printf("\n-----------------------------------------------\n");
+   printf("Decompression terminé, le fichier alors généré est de taille %i Octets. \n",nbTotal);
+   printf("-----------------------------------------------\n");
+  
+}
+
+
+// Programme principal et appel au fonction 
 int main(int argc,char** argv){
   FILE*ff=fopen(argv[1],"r");
   unsigned int mode;
@@ -180,7 +265,9 @@ int main(int argc,char** argv){
   }
   if (mode==0){
     decompression(argv[1]);
+  }else{
+    decompression1(argv[1]);
   }
-  
+  fclose(ff);
 }
 

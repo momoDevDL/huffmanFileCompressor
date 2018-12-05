@@ -14,14 +14,34 @@ float frequence[256];
 
  char *bin[257];
 
-typedef struct {float freq;int fg; int fd;int pere;}Noeud;
+/*!
+ * \brief definition d'une structure Noeud 
+ */
 
+typedef struct {
+  float freq;
+  int fg;
+  int fd;
+  int pere;
+}Noeud;
+
+
+/*!
+ * \brief declaration d'une tableau de Noeud
+ * de taille 511 ( caractère + Noeud crée )
+ */
 
 Noeud arbre[511];
 
-unsigned int mode = 0;
+unsigned int mode = 0; // mode de compression 
 unsigned int tailleF=0;
 
+/*!
+ * \brief declaration d'une func qui calcule la
+ * frequence des caracteres dans les fichiers en 
+ * parcourant le fichier passé en parametre
+ * et précise le mode de compression
+ */
 
 void calculFrequence(char * fichier){
   char buffer[1];
@@ -68,6 +88,11 @@ void calculFrequence(char * fichier){
   }
 }
 
+/*!
+ * \brief declaration d'une func qui modifie 
+ * le pere , le fils , et la frequence des minimums 
+ * dans l'arbre apres les avoir trouvés
+ */
 
 void modifierPereFilsFrequence(int indice1,int indice2,unsigned int k){
   arbre[indice1].pere=k;
@@ -77,7 +102,12 @@ void modifierPereFilsFrequence(int indice1,int indice2,unsigned int k){
   arbre[k].freq= arbre[indice2].freq + arbre[indice1].freq;
 }
 
-
+/*!
+ * \brief declaration d'une func qui va initialiser 
+ * l'arbre en passant a chaque noeud d'un caractere 
+ * existant dans le fichier sa frequence 
+ * et initialiser les autres char avec des valeurs par defaut
+ */
 
 void  initArbre(){
   
@@ -93,8 +123,16 @@ void  initArbre(){
   }
 }
   
+/*!
+ * \brief declaration d'une func qui va parcourir tout les noeuds
+ * de l'arbre tant qu'on a pas atteint le Noeud 511 ou arrivé à 
+ * un noeud dans la frequence vaut 1 ( tout les caracteres de fichiers 
+ * ont été traité) tout en prenant deux mins et modifier leur Noeud 
+ * et creer un nouveau Noeus a partir de ces deux mins
+ * Return le nombre de Noeud total dans l'arbre .
+ */
 
-unsigned int initNoeuds(){
+unsigned int ParcoursMinNoeud(){
 
   float min1;
   float min2;
@@ -126,6 +164,12 @@ unsigned int initNoeuds(){
   return nbNoeuds;
 }
 
+/*!
+ * \brief declaration d'une func qui va parcourir l'arbre créé
+ * en générant le code binaire associé a chaque car
+ * et le mettre dans un tableau de binaire 
+ */
+
 void parcoursCode(int nbNoeuds,char *code){
   if(arbre[nbNoeuds].fg!=-1){
     char *ncode=(char*)malloc(strlen(code)+1);
@@ -156,6 +200,16 @@ void parcoursCode(int nbNoeuds,char *code){
 }
 
 
+/*!
+ * \brief declaration d'une func qui va d'abord creer une entete
+ * a paritir de l'arbre en utilisant le cheminement suivant :
+ * MODE TAILLEF CAR TAILLE_BIN CODE_BIN 
+ * Puis parcourir le fichier source en mettant dans un buffer 
+ *le code binaire de chaque caractere . Et une fois la taille de buffer
+ * vaut 8 on commence le calcul de l'entier pour les 8 premieres
+ * case de buffer .
+ * source et cr
+ */
 
 
 
@@ -196,22 +250,39 @@ void compression(char *fichier1 ,char *fichier2,unsigned int nb){
 	  buffer2[binT]=bin[parcours][binT];
 	  binT++;
 	}
+	
 	fputc(binT,fw);
 	ftailleF++;
-	if(binT<8)
-	for(int e=binT;e<8;e++){
-	buffer2[e]='0';
-	}
 	
-	for(int j=7;j>=0;j--){
+	while(binT>=8){
+	  for(int j=7;j>=0;j--){
+	    binV+=pow(2,7-j)*(buffer2[j]-'0');
+	  }
 	  
-	  binV+=pow(2,7-j)*(buffer2[j]-'0');
+	  fputc(binV,fw);
+	  ftailleF++;
+	  binT-=8;
+	  binV=0;
+	  for(int k=0;k<254;k++){
+	    buffer2[k]=buffer2[k+8];
+	  }
 	}
 	
-	fputc(binV,fw);
-	ftailleF++;
-	binT=0;
-	binV=0;
+	if(binT<8 && binT>0){
+	  for(int e=binT;e<8;e++){
+	    buffer2[e]='0';
+	  }
+	
+	  for(int j=7;j>=0;j--){
+	  
+	    binV+=pow(2,7-j)*(buffer2[j]-'0');
+	  }
+	
+	  fputc(binV,fw);
+	  ftailleF++;
+	  binT=0;
+	  binV=0;
+	}
       }
     }
     //-----------------------------------------------------
@@ -264,6 +335,12 @@ void compression(char *fichier1 ,char *fichier2,unsigned int nb){
   printf("Taille originelle : %i; taille compressée : %i; gain : %f%% !\n",tailleF,ftailleF,((1-(((float)ftailleF/(float)tailleF)))*100));
 }
 
+/*!
+ * \brief declaration d'une func qui compresse le fichier 
+ * avec le mode 1 si le fichier ne contient qu'un seul caractere repété 
+ * n fois 
+ */
+
 void compression2(char *fichier1 ,char *fichier2){
   unsigned int i=0;
   unsigned int base=255;
@@ -276,8 +353,8 @@ void compression2(char *fichier1 ,char *fichier2){
     fputc(i,fw);
 
     while (tailleF>base){
-     fputc(base,fw);
-     tailleF=tailleF-base;
+      fputc(base,fw);
+      tailleF=tailleF-base;
 
     }
     fputc(tailleF,fw);
@@ -292,6 +369,10 @@ void compression2(char *fichier1 ,char *fichier2){
 }
  
      
+/*!
+ * \brief declaration d'une func d'affichage 
+ * de l'arbre
+ */
 
 void printArbre(unsigned int nb){
   for(unsigned int i=0;i<nb;i++){
@@ -301,6 +382,7 @@ void printArbre(unsigned int nb){
 
 
 //programme principal et appel au fonction
+
 int main(int argc,char* argv[]){
   unsigned int nb;
   bin[256]=NULL;
@@ -316,12 +398,13 @@ int main(int argc,char* argv[]){
     if(argc<3){
       printf("-------usage : ./huf2 nomFichierSource nomFichierHuf -------\n");
     }else{
-    initArbre();
-    nb=initNoeuds();
-    printArbre(nb);
-    parcoursCode(nb-1,"");
-    compression(argv[1],argv[2],nb-255);
-  } 
-  return 0;
-}
+      initArbre();
+      nb=ParcoursMinNoeud();
+      printArbre(nb);
+      parcoursCode(nb-1,"");
+      compression(argv[1],argv[2],nb-255);
+    } 
+   
+  }
+   return 0;
 }

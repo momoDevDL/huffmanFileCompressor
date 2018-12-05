@@ -94,10 +94,11 @@ def parcours (repertoire, dest, explo) :
                 
 explo = 1
 
+os.popen("touch "+sys.argv[1]+".provisoire")
 debDos(sys.argv[1],(sys.argv[1]+".provisoire"),sys.argv[1], explo)
 parcours(sys.argv[1],(sys.argv[1]+".provisoire"),explo)
 finDos(sys.argv[1],(sys.argv[1]+".provisoire"),sys.argv[1], explo)
-os.popen("iconv -t iso-8859-15 "+sys.argv[1]+".provisoire  > "+sys.argv[1]+".provisoire2")
-os.popen("./huf "+sys.argv[1]+".provisoire2 "+sys.argv[1]+".huf")
-os.popen("rm "+sys.argv[1]+".provisoire")
-os.popen("rm "+sys.argv[1]+".provisoire2 ")
+#os.popen("iconv -t iso-8859-10 "+sys.argv[1]+".provisoire  >> "+sys.argv[1]+".provisoire2")
+#os.popen("./huf "+sys.argv[1]+".provisoire2 "+sys.argv[1]+".huf")
+#os.popen("rm "+sys.argv[1]+".provisoire")
+#os.popen("rm "+sys.argv[1]+".provisoire2 ")
